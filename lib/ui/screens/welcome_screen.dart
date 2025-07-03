@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:vehicle_service_book_app/ui/widgets/custom_button_widget.dart';
 import 'package:vehicle_service_book_app/ui/widgets/hero_content_widget.dart';
-import 'package:vehicle_service_book_app/ui/widgets/logo_widget.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -21,14 +19,14 @@ class WelcomeScreen extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const HeroContentWidget(
-                      imagePath: 'assets/images/washing_machine.png',
+                      imagePath: 'assets/images/moto_track_hero_img.png',
                     ),
-                    const SizedBox(height: 32),
-                    CustomButtonWidget(
-                      text: 'Register',
+                    const SizedBox(height: 56),
+                    ElevatedButton(
                       onPressed: () {
                         Navigator.pushNamed(context, '/register');
                       },
+                      child: const Text('Daftar'),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
@@ -41,12 +39,10 @@ class WelcomeScreen extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             child: Text(
-                              'or',
+                              'atau',
                               style: TextStyle(
-                                color: colorScheme.onSurface.withValues(
-                                  alpha: 153,
-                                ), // ✅ 0.6 * 255 = 153
-                                fontSize: 20,
+                                color: colorScheme.onSurface.withAlpha(153),
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -55,16 +51,15 @@ class WelcomeScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    CustomButtonWidget(
-                      text: 'Login',
+                    ElevatedButton(
                       onPressed: () {
                         Navigator.pushNamed(context, '/login');
                       },
+                      child: const Text('Masuk'),
                     ),
                   ],
                 ),
               ),
-              const Positioned(top: 0, right: 0, child: LogoWidget()),
             ],
           ),
         ),

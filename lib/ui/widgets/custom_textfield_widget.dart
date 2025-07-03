@@ -5,6 +5,7 @@ class CustomTextfieldWidget extends StatefulWidget {
   final String label;
   final String hintText;
   final bool obscureText;
+  final bool isOptional; // ✅ Tambahkan ini
 
   const CustomTextfieldWidget({
     super.key,
@@ -12,6 +13,7 @@ class CustomTextfieldWidget extends StatefulWidget {
     required this.label,
     required this.hintText,
     this.obscureText = false,
+    this.isOptional = false, // ✅ Default
   });
 
   @override
@@ -46,6 +48,7 @@ class CustomTextfieldWidgetState extends State<CustomTextfieldWidget> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
       child: TextFormField(
+        style: Theme.of(context).textTheme.bodySmall,
         controller: widget.controller,
         obscureText: _obscureText,
         focusNode: _focusNode,
@@ -57,8 +60,8 @@ class CustomTextfieldWidgetState extends State<CustomTextfieldWidget> {
                 : (_isFocused ? colorScheme.primary : colorScheme.onSurface),
           ),
           hintText: widget.hintText,
-          hintStyle: TextStyle(
-            color: colorScheme.onSurface.withAlpha(153), // 60% opacity
+          hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurface.withAlpha(153),
           ),
           border: OutlineInputBorder(
             borderSide: BorderSide(
@@ -98,9 +101,14 @@ class CustomTextfieldWidgetState extends State<CustomTextfieldWidget> {
               : null,
         ),
         validator: (value) {
-          if (value == null || value.isEmpty) {
-            setState(() => _hasError = true);
-            return '${widget.label} tidak boleh kosong';
+          if ((value == null || value.isEmpty)) {
+            if (widget.isOptional) {
+              setState(() => _hasError = false);
+              return null;
+            } else {
+              setState(() => _hasError = true);
+              return '${widget.label} tidak boleh kosong';
+            }
           }
 
           if (widget.label == 'Email' &&

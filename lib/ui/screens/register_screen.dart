@@ -1,9 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:vehicle_service_book_app/ui/services/api_service.dart';
-import 'package:vehicle_service_book_app/ui/widgets/custom_button_widget.dart';
+import 'package:vehicle_service_book_app/services/api_service.dart';
 import 'package:vehicle_service_book_app/ui/widgets/custom_textfield_widget.dart';
-import 'package:vehicle_service_book_app/ui/widgets/logo_widget.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -33,23 +31,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted) return;
 
       if (response.statusCode == 201) {
-        await showDialog(
-          context: context,
-          builder: (BuildContext dialogContext) {
-            return AlertDialog(
-              title: const Text('Registrasi Berhasil'),
-              content: const Text('Silakan login menggunakan akun Anda.'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('OK'),
-                ),
-              ],
-            );
-          },
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Registrasi berhasil. Silakan login.'),
+            backgroundColor: Colors.green,
+          ),
         );
-
-        if (!mounted) return;
         Navigator.pushReplacementNamed(context, '/login');
       } else {
         final error = jsonDecode(response.body);
@@ -65,17 +52,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _showError(String message) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Registrasi Gagal'),
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
         content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Tutup'),
-          ),
-        ],
+        backgroundColor: Theme.of(context).colorScheme.error,
       ),
     );
   }
@@ -97,6 +77,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            'Buat Akun Baru',
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: colorScheme.primary,
+                                ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Text(
+                            'Daftar untuk mulai memantau riwayat servis kendaraan Anda.',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(height: 32),
                         CustomTextfieldWidget(
                           controller: usernameController,
                           label: 'Username',
@@ -118,26 +118,46 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const SizedBox(height: 24),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Align(
-                            alignment: Alignment.centerRight,
+                          child: ElevatedButton(
+                            onPressed: isLoading
+                                ? null
+                                : () {
+                                    if (_formKey.currentState!.validate()) {
+                                      _registerUser();
+                                    }
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 16,
+                              ),
+                            ),
                             child: isLoading
-                                ? const CircularProgressIndicator()
-                                : CustomButtonWidget(
-                                    text: 'Register',
-                                    onPressed: () {
-                                      if (_formKey.currentState!.validate()) {
-                                        _registerUser();
-                                      }
-                                    },
-                                  ),
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                : const Text('Daftar'),
                           ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/login');
+                          },
+                          child: const Text("Sudah punya akun? Masuk"),
                         ),
                       ],
                     ),
                   ),
                 ),
               ),
-              const Positioned(top: 0, right: 0, child: LogoWidget()),
             ],
           ),
         ),

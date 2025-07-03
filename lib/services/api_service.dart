@@ -36,6 +36,20 @@ class ApiService {
     return await http.put(url, headers: headers, body: jsonEncode(data));
   }
 
+  // PATCH Request
+  static Future<http.Response> patch(
+    String endpoint, {
+    required dynamic body,
+  }) async {
+    final headers = await _getHeaders();
+    final url = Uri.parse('$baseUrl$endpoint');
+    try {
+      return await http.patch(url, headers: headers, body: jsonEncode(body));
+    } catch (e) {
+      throw Exception('Failed to PATCH: $e');
+    }
+  }
+
   // DELETE Request
   static Future<http.Response> delete(String endpoint) async {
     final headers = await _getHeaders();

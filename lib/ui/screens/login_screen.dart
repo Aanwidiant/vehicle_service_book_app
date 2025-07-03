@@ -1,10 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vehicle_service_book_app/ui/services/api_service.dart';
-import 'package:vehicle_service_book_app/ui/widgets/custom_button_widget.dart';
+import 'package:vehicle_service_book_app/services/api_service.dart';
 import 'package:vehicle_service_book_app/ui/widgets/custom_textfield_widget.dart';
-import 'package:vehicle_service_book_app/ui/widgets/logo_widget.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -44,13 +42,14 @@ class _LoginScreenState extends State<LoginScreen> {
         await prefs.setString('userPhoto', user['photo'] ?? '');
 
         if (!mounted) return;
+        _showSnackbar('Login berhasil.');
         Navigator.pushReplacementNamed(context, '/dashboard');
       } else {
         final error = jsonDecode(response.body);
-        _showError(error['message'] ?? 'Login gagal.');
+        _showSnackbar(error['message'] ?? 'Login gagal.');
       }
     } catch (e) {
-      _showError('Terjadi kesalahan: $e');
+      _showSnackbar('Terjadi kesalahan: $e');
     } finally {
       if (mounted) {
         setState(() => isLoading = false);
@@ -58,20 +57,10 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _showError(String message) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Login Gagal'),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Tutup'),
-          ),
-        ],
-      ),
-    );
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -91,10 +80,31 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            'Selamat datang kembali!',
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: colorScheme.primary,
+                                ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Text(
+                            'Silakan masuk untuk melanjutkan ke dashboard Anda.',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(height: 32),
                         CustomTextfieldWidget(
                           controller: emailController,
                           label: 'Email',
                           hintText: 'Masukkan email',
+                          isOptional: true,
                         ),
                         const SizedBox(height: 16),
                         CustomTextfieldWidget(
@@ -102,32 +112,48 @@ class _LoginScreenState extends State<LoginScreen> {
                           label: 'Password',
                           hintText: 'Masukkan password',
                           obscureText: true,
+                          isOptional: true,
                         ),
-                        const SizedBox(height: 16),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: SizedBox(
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: isLoading
-                                  ? const CircularProgressIndicator()
-                                  : CustomButtonWidget(
-                                text: 'Login',
-                                onPressed: () {
+                        const SizedBox(height: 24),
+                        ElevatedButton(
+                          onPressed: isLoading
+                              ? null
+                              : () {
                                   if (_formKey.currentState!.validate()) {
                                     _loginUser();
                                   }
                                 },
-                              ),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 32,
+                              vertical: 16,
                             ),
                           ),
+                          child: isLoading
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                              : const Text('Masuk'),
+                        ),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/register');
+                          },
+                          child: const Text("Belum punya akun? Daftar"),
                         ),
                       ],
                     ),
                   ),
                 ),
               ),
-              const Positioned(top: 0, right: 0, child: LogoWidget()),
             ],
           ),
         ),

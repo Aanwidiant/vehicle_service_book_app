@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class HeroContentWidget extends StatelessWidget {
   final String imagePath;
@@ -18,9 +19,9 @@ class HeroContentWidget extends StatelessWidget {
             width: 240,
             child: Text(
               'Moto',
-              style: TextStyle(
+              style: GoogleFonts.bebasNeue(
                 fontSize: 64,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
                 color: colorScheme.primary,
               ),
             ),
@@ -29,23 +30,17 @@ class HeroContentWidget extends StatelessWidget {
             width: 240,
             child: Align(
               alignment: Alignment.centerRight,
-              child: RichText(
-                text: TextSpan(
-                  style: const TextStyle(
-                    fontSize: 56,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  children: [
-                    TextSpan(
-                      text: 'Track',
-                      style: TextStyle(color: colorScheme.onSurface),
-                    ),
-                  ],
+              child: Text(
+                'Track',
+                style: GoogleFonts.orbitron(
+                  fontSize: 56,
+                  fontWeight: FontWeight.w900,
+                  color: colorScheme.onSurface,
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 36),
+          const SizedBox(height: 24),
           Image.asset(imagePath, width: 240, fit: BoxFit.cover),
         ],
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vehicle_service_book_app/ui/widgets/hero_content_widget.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -33,7 +34,9 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: Text('Vehicle Service Book', style: TextStyle(fontSize: 24)),
+        child: HeroContentWidget(
+          imagePath: 'assets/images/moto_track_hero_img.png',
+        ),
       ),
     );
   }
