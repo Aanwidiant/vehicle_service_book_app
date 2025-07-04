@@ -1,14 +1,20 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mime/mime.dart';
+import 'package:http_parser/http_parser.dart';
 
 class ApiService {
   static const String baseUrl = 'https://www.vooid.my.id/api';
 
-  static Future<Map<String, String>> _getHeaders() async {
+  static Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+    return prefs.getString('token');
+  }
 
+  static Future<Map<String, String>> _getHeaders() async {
+    final token = await _getToken();
     return {
       'Authorization': 'Bearer $token',
       'Content-Type': 'application/json',
@@ -65,5 +71,30 @@ class ApiService {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(data),
     );
+  }
+
+  // UPLOAD FILE
+  static Future<http.Response> uploadImage(File file) async {
+    final uri = Uri.parse('$baseUrl/user/image');
+    final token = await _getToken();
+
+    if (token == null) throw Exception('Token not found');
+
+    final request = http.MultipartRequest('POST', uri);
+    request.headers['Authorization'] = 'Bearer $token';
+
+    final mimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
+    final splitMime = mimeType.split('/');
+
+    final multipartFile = await http.MultipartFile.fromPath(
+      'file',
+      file.path,
+      contentType: MediaType(splitMime[0], splitMime[1]),
+    );
+
+    request.files.add(multipartFile);
+
+    final streamedResponse = await request.send();
+    return await http.Response.fromStream(streamedResponse);
   }
 }

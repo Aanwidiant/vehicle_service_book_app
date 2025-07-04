@@ -32,10 +32,21 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Scaffold(
       body: Center(
-        child: HeroContentWidget(
-          imagePath: 'assets/images/moto_track_hero_img.png',
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const HeroContentWidget(
+              imagePath: 'assets/images/moto_track_hero_img.png',
+            ),
+            const SizedBox(height: 24),
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+            ),
+          ],
         ),
       ),
     );

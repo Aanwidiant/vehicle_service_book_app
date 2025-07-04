@@ -1,8 +1,13 @@
 import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vehicle_service_book_app/services/api_service.dart';
 import 'package:vehicle_service_book_app/ui/screens/edit_profile_screen.dart';
 import 'package:vehicle_service_book_app/ui/widgets/main_scaffold_widget.dart';
+import 'package:vehicle_service_book_app/ui/widgets/profile_avatar_widget.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -15,6 +20,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Map<String, dynamic>? userData;
   bool isLoading = true;
   String? errorMessage;
+  bool isUploading = false;
 
   @override
   void initState() {
@@ -52,19 +58,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Future<void> _uploadProfileImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile == null) return;
+
+    setState(() => isUploading = true);
+
+    try {
+      final response = await ApiService.uploadImage(File(pickedFile.path));
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['success'] == true) {
+        final prefs = await SharedPreferences.getInstance();
+        final photoUrl = data['data']?['photo'] ?? '';
+        await prefs.setString('userPhoto', photoUrl);
+
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Foto berhasil diunggah')),
+        );
+        fetchUserData();
+      } else {
+        throw Exception(data['message'] ?? 'Upload gagal');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal upload foto: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => isUploading = false);
+    }
+  }
+
   void _confirmDeleteAccount() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Yakin ingin menghapus akun?'),
-        content: const Text(
-          'Tindakan ini tidak dapat dibatalkan. Seluruh data Anda akan hilang permanen.',
-        ),
+        content: const Text('Tindakan ini tidak dapat dibatalkan. Seluruh data Anda akan hilang permanen.'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
@@ -88,17 +124,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (response.statusCode == 200 && data['success'] == true) {
         if (!mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Akun berhasil dihapus')));
-        Navigator.of(
-          context,
-        ).pushNamedAndRemoveUntil('/welcome', (route) => false);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Akun berhasil dihapus')));
+        Navigator.of(context).pushNamedAndRemoveUntil('/welcome', (route) => false);
       } else {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data['message'] ?? 'Gagal menghapus akun')),
-        );
+        throw Exception(data['message'] ?? 'Gagal menghapus akun');
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -138,57 +167,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            CircleAvatar(
+            ProfileAvatarWidget(
+              name: userData!['name'],
               radius: 48,
-              backgroundColor: colorScheme.primary.withValues(alpha: 0.75),
-              child: Text(
-                userData!['name'][0].toUpperCase(),
-                style: textTheme.headlineMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              clickable: false,
             ),
             const SizedBox(height: 16),
-            Text(
-              userData!['name'],
-              style: textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            Text(userData!['name'], style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
             const SizedBox(height: 4),
-            Text(
-              userData!['email'],
-              style: textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+            Text(userData!['email'], style: textTheme.bodyMedium?.copyWith(color: Colors.grey[600])),
+            const SizedBox(height: 12),
+
+            ElevatedButton.icon(
+              onPressed: isUploading ? null : _uploadProfileImage,
+              icon: isUploading
+                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.image),
+              label: const Text('Upload Foto Profil'),
             ),
             const SizedBox(height: 24),
             Card(
               elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 16,
-                  horizontal: 20,
-                ),
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    InfoRow(
-                      label: 'Bergabung Sejak',
-                      value: _formatDate(userData!['createdAt']),
-                    ),
+                    InfoRow(label: 'Bergabung Sejak', value: _formatDate(userData!['createdAt'])),
                     const SizedBox(height: 8),
-                    InfoRow(
-                      label: 'Terakhir Diperbarui',
-                      value: _formatDate(userData!['updatedAt']),
-                    ),
+                    InfoRow(label: 'Terakhir Diperbarui', value: _formatDate(userData!['updatedAt'])),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 32),
+
             ElevatedButton.icon(
               onPressed: () async {
                 final result = await Navigator.push(
@@ -201,45 +215,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                 );
-
-                if (result == true) {
-                  // Refresh data user dari API
-                  fetchUserData();
-                }
+                if (result == true) fetchUserData();
               },
               icon: const Icon(Icons.edit),
               label: const Text('Edit Profil'),
             ),
+
             Container(
               margin: const EdgeInsets.only(top: 40),
               padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 56),
               decoration: BoxDecoration(
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.primary,
-                  width: 2,
-                ),
-                color: Theme.of(context).colorScheme.primary.withAlpha(40),
+                border: Border.all(color: colorScheme.primary, width: 2),
+                color: colorScheme.primary.withAlpha(40),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.warning,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
+                      Icon(Icons.warning, color: colorScheme.primary),
                       const SizedBox(width: 8),
-                      Text(
-                        'Zona Berbahaya',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
+                      Text('Zona Berbahaya', style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold)),
                     ],
                   ),
                   const SizedBox(height: 32),
@@ -267,13 +264,9 @@ class InfoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-
     return Row(
       children: [
-        Text(
-          '$label:',
-          style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-        ),
+        Text('$label:', style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
         const SizedBox(width: 8),
         Text(value, style: textTheme.bodyMedium),
       ],
