@@ -4,14 +4,9 @@ import 'package:vehicle_service_book_app/ui/widgets/profile_avatar_widget.dart';
 import 'package:vehicle_service_book_app/ui/screens/profile_screen.dart';
 
 class UserMenuWidget extends StatelessWidget {
-  final String name;
   final bool showProfileOption;
 
-  const UserMenuWidget({
-    super.key,
-    required this.name,
-    this.showProfileOption = true, // default: true
-  });
+  const UserMenuWidget({super.key, this.showProfileOption = true});
 
   Future<void> _handleLogout(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
@@ -62,7 +57,7 @@ class UserMenuWidget extends StatelessWidget {
           ),
         ),
       ],
-      child: ProfileAvatarWidget(name: name),
+      child: const ProfileAvatarWidget(),
     );
   }
 }

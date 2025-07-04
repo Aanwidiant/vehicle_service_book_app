@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vehicle_service_book_app/providers/user_provider.dart';
 import 'package:vehicle_service_book_app/services/api_service.dart';
 import 'package:vehicle_service_book_app/ui/widgets/custom_textfield_widget.dart';
 
@@ -37,11 +39,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', token);
-        await prefs.setString('userName', user['name']);
-        await prefs.setString('userEmail', user['email']);
-        await prefs.setString('userPhoto', user['photo'] ?? '');
 
         if (!mounted) return;
+        context.read<UserProvider>().setUser(
+          id: user['id'],
+          name: user['name'],
+          email: user['email'],
+          photo: user['photo'] ?? '',
+        );
+
         _showSnackbar('Login berhasil.');
         Navigator.pushReplacementNamed(context, '/dashboard');
       } else {

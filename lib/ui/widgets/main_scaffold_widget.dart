@@ -4,7 +4,6 @@ import 'package:vehicle_service_book_app/ui/widgets/user_menu_widget.dart';
 class MainScaffoldWidget extends StatelessWidget {
   final String title;
   final Widget body;
-  final String userName;
   final bool showProfileOption;
   final bool showBackButton;
 
@@ -12,7 +11,6 @@ class MainScaffoldWidget extends StatelessWidget {
     super.key,
     required this.title,
     required this.body,
-    required this.userName,
     this.showProfileOption = true,
     this.showBackButton = false,
   });
@@ -26,10 +24,7 @@ class MainScaffoldWidget extends StatelessWidget {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 20),
-            child: UserMenuWidget(
-              name: userName,
-              showProfileOption: showProfileOption,
-            ),
+            child: UserMenuWidget(showProfileOption: showProfileOption),
           ),
         ],
       ),

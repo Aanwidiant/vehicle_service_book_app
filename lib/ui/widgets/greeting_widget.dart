@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import 'package:vehicle_service_book_app/providers/user_provider.dart';
 
 class GreetingWidget extends StatefulWidget {
   const GreetingWidget({super.key});
@@ -11,7 +12,6 @@ class GreetingWidget extends StatefulWidget {
 }
 
 class _GreetingWidgetState extends State<GreetingWidget> {
-  String userName = '';
   String greeting = '';
   String currentTime = '';
   Timer? _timer;
@@ -19,15 +19,12 @@ class _GreetingWidgetState extends State<GreetingWidget> {
   @override
   void initState() {
     super.initState();
-    _loadUserData();
-    _updateTime(); // initial call
+    _setGreeting();
+    _updateTime();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) => _updateTime());
   }
 
-  Future<void> _loadUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final name = prefs.getString('userName') ?? 'User';
-
+  Future<void> _setGreeting() async {
     final hour = DateTime.now().hour;
     String timeGreeting;
     if (hour >= 5 && hour < 12) {
@@ -42,7 +39,6 @@ class _GreetingWidgetState extends State<GreetingWidget> {
 
     if (!mounted) return;
     setState(() {
-      userName = name;
       greeting = timeGreeting;
     });
   }
@@ -65,6 +61,7 @@ class _GreetingWidgetState extends State<GreetingWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final userName = context.watch<UserProvider>().name ?? 'User';
     final t = Theme.of(context).textTheme;
     final c = Theme.of(context).colorScheme;
 

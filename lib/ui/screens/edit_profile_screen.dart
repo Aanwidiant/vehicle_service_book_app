@@ -1,20 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import 'package:vehicle_service_book_app/providers/user_provider.dart';
 import 'package:vehicle_service_book_app/services/api_service.dart';
 import 'package:vehicle_service_book_app/ui/widgets/custom_textfield_widget.dart';
 
 class EditProfileScreen extends StatefulWidget {
-  final String userId;
-  final String currentName;
-  final String currentEmail;
-
-  const EditProfileScreen({
-    super.key,
-    required this.userId,
-    required this.currentName,
-    required this.currentEmail,
-  });
+  const EditProfileScreen({super.key});
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
@@ -31,8 +23,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.currentName);
-    _emailController = TextEditingController(text: widget.currentEmail);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    _nameController = TextEditingController(text: userProvider.name ?? '');
+    _emailController = TextEditingController(text: userProvider.email ?? '');
     _passwordController = TextEditingController();
   }
 
@@ -47,10 +40,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      isSubmitting = true;
-      errorMessage = null;
-    });
+    setState(() => isSubmitting = true);
+
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userId = userProvider.id;
 
     try {
       final body = {
@@ -62,17 +55,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         body['password'] = _passwordController.text.trim();
       }
 
-      final response = await ApiService.patch(
-        '/user/${widget.userId}',
-        body: body,
-      );
-
+      final response = await ApiService.patch('/user/$userId', body: body);
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200 && data['success'] == true) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('userName', body['name'] ?? '');
-        await prefs.setString('userEmail', body['email'] ?? '');
+        userProvider.updateProfile(name: body['name'], email: body['email']);
 
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -80,16 +67,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         );
         Navigator.pop(context, true);
       } else {
-        setState(() {
-          errorMessage = data['message'] ?? 'Gagal memperbarui profil.';
-        });
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? 'Gagal memperbarui profil.'),
+          ),
+        );
       }
     } catch (e) {
-      setState(() {
-        errorMessage = 'Terjadi kesalahan. Silakan coba lagi.';
-      });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Terjadi kesalahan. Silakan coba lagi.')),
+      );
     } finally {
-      setState(() => isSubmitting = false);
+      if (mounted) {
+        setState(() => isSubmitting = false);
+      }
     }
   }
 
@@ -140,13 +133,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     obscureText: true,
                     isOptional: true,
                   ),
-                  if (errorMessage != null) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      errorMessage!,
-                      style: TextStyle(color: colorScheme.error),
-                    ),
-                  ],
                   const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: isSubmitting ? null : _submit,

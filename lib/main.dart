@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:vehicle_service_book_app/common/app_theme.dart';
+import 'package:vehicle_service_book_app/providers/user_provider.dart';
 import 'package:vehicle_service_book_app/ui/screens/dashboard_screen.dart';
 import 'package:vehicle_service_book_app/ui/screens/login_screen.dart';
 import 'package:vehicle_service_book_app/ui/screens/register_screen.dart';
@@ -7,7 +9,12 @@ import 'package:vehicle_service_book_app/ui/screens/splash_screen.dart';
 import 'package:vehicle_service_book_app/ui/screens/welcome_screen.dart';
 
 void main() {
-  runApp(const VehicleServiceBookApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => UserProvider(),
+      child: const VehicleServiceBookApp(),
+    ),
+  );
 }
 
 class VehicleServiceBookApp extends StatelessWidget {
