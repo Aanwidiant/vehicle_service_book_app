@@ -17,28 +17,28 @@ class DashboardScreen extends StatelessWidget {
         title: 'Dashboard',
         body: Padding(
           padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const GreetingWidget(),
-              const SizedBox(height: 32),
-              Center(
-                child: Text(
-                  'Mulai jelajahi fitur MotoTrack',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.primary,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const GreetingWidget(),
+                const SizedBox(height: 32),
+                Center(
+                  child: Text(
+                    'Mulai jelajahi fitur MotoTrack',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: MediaQuery.of(context).size.width > 600
-                      ? 3
-                      : 2,
+                const SizedBox(height: 16),
+                GridView.count(
+                  crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(), // penting!
                   children: [
                     MenuCardWidget(
                       icon: Icons.directions_car,
@@ -78,8 +78,8 @@ class DashboardScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

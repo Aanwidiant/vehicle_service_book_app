@@ -1,19 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class CustomTextfieldWidget extends StatefulWidget {
   final TextEditingController controller;
   final String label;
-  final String hintText;
+  final String? hintText;
   final bool obscureText;
-  final bool isOptional; // ✅ Tambahkan ini
+  final bool isOptional;
+  final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
+  final bool displayOnly;
 
   const CustomTextfieldWidget({
     super.key,
     required this.controller,
     required this.label,
-    required this.hintText,
+    this.hintText,
     this.obscureText = false,
-    this.isOptional = false, // ✅ Default
+    this.isOptional = false,
+    this.keyboardType,
+    this.inputFormatters,
+    this.displayOnly = false,
   });
 
   @override
@@ -45,6 +52,37 @@ class CustomTextfieldWidgetState extends State<CustomTextfieldWidget> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
+    if (widget.displayOnly) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.label,
+              style: Theme.of(
+                context,
+              ).textTheme.labelLarge?.copyWith(color: colorScheme.onSurface),
+            ),
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.all(12),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                border: Border.all(color: colorScheme.outline),
+                borderRadius: BorderRadius.circular(8),
+                color: colorScheme.surfaceContainerHighest.withAlpha(25),
+              ),
+              child: Text(
+                widget.controller.text,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
       child: TextFormField(
@@ -59,7 +97,7 @@ class CustomTextfieldWidgetState extends State<CustomTextfieldWidget> {
                 ? colorScheme.error
                 : (_isFocused ? colorScheme.primary : colorScheme.onSurface),
           ),
-          hintText: widget.hintText,
+          hintText: widget.hintText ?? '',
           hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: colorScheme.onSurface.withAlpha(153),
           ),
@@ -138,6 +176,29 @@ class CustomTextfieldWidgetState extends State<CustomTextfieldWidget> {
               setState(() => _hasError = true);
               return 'Password harus memiliki minimal satu simbol.';
             }
+          }
+
+          if (widget.label == 'Tahun') {
+            final year = int.tryParse(value);
+            final now = DateTime.now().year;
+            if (year == null || year < 1900 || year > now) {
+              setState(() => _hasError = true);
+              return 'Tahun harus valid antara 1900–$now';
+            }
+          }
+
+          if (widget.label == 'Kilometer Sekarang') {
+            final km = int.tryParse(value);
+            if (km == null || km < 0) {
+              setState(() => _hasError = true);
+              return 'Kilometer harus berupa angka positif';
+            }
+          }
+
+          if (widget.label == 'Plat Nomor' &&
+              !RegExp(r'^[A-Z]{1,2}[0-9]{1,5}[A-Z]{0,3}$').hasMatch(value)) {
+            setState(() => _hasError = true);
+            return 'Format plat nomor tidak valid';
           }
 
           setState(() => _hasError = false);

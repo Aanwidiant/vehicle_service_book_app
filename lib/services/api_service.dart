@@ -74,8 +74,32 @@ class ApiService {
   }
 
   // UPLOAD FILE
-  static Future<http.Response> uploadImage(File file) async {
-    final uri = Uri.parse('$baseUrl/user/image');
+  // static Future<http.Response> uploadImage(File file) async {
+  //   final uri = Uri.parse('$baseUrl/user/image');
+  //   final token = await _getToken();
+  //
+  //   if (token == null) throw Exception('Token not found');
+  //
+  //   final request = http.MultipartRequest('POST', uri);
+  //   request.headers['Authorization'] = 'Bearer $token';
+  //
+  //   final mimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
+  //   final splitMime = mimeType.split('/');
+  //
+  //   final multipartFile = await http.MultipartFile.fromPath(
+  //     'file',
+  //     file.path,
+  //     contentType: MediaType(splitMime[0], splitMime[1]),
+  //   );
+  //
+  //   request.files.add(multipartFile);
+  //
+  //   final streamedResponse = await request.send();
+  //   return await http.Response.fromStream(streamedResponse);
+  // }
+
+  static Future<http.Response> uploadImage(File file, {required String path}) async {
+    final uri = Uri.parse('$baseUrl$path');
     final token = await _getToken();
 
     if (token == null) throw Exception('Token not found');
@@ -97,4 +121,5 @@ class ApiService {
     final streamedResponse = await request.send();
     return await http.Response.fromStream(streamedResponse);
   }
+
 }

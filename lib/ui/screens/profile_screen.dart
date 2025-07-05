@@ -78,7 +78,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => isUploading = true);
 
     try {
-      final response = await ApiService.uploadImage(File(pickedFile.path));
+      final response = await ApiService.uploadImage(
+        File(pickedFile.path),
+        path: '/user/image',
+      );
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['success'] == true) {
