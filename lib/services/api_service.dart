@@ -98,7 +98,10 @@ class ApiService {
   //   return await http.Response.fromStream(streamedResponse);
   // }
 
-  static Future<http.Response> uploadImage(File file, {required String path}) async {
+  static Future<http.Response> uploadImage(
+    File file, {
+    required String path,
+  }) async {
     final uri = Uri.parse('$baseUrl$path');
     final token = await _getToken();
 
@@ -121,5 +124,4 @@ class ApiService {
     final streamedResponse = await request.send();
     return await http.Response.fromStream(streamedResponse);
   }
-
 }

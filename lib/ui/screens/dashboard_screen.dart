@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:vehicle_service_book_app/ui/screens/my_vehicles_screen.dart';
-import 'package:vehicle_service_book_app/ui/screens/service_history_screen.dart';
-import 'package:vehicle_service_book_app/ui/screens/service_reminder_screen.dart';
 import 'package:vehicle_service_book_app/ui/widgets/greeting_widget.dart';
 import 'package:vehicle_service_book_app/ui/widgets/main_scaffold_widget.dart';
 import 'package:vehicle_service_book_app/ui/widgets/menu_card_widget.dart';
@@ -34,46 +31,33 @@ class DashboardScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 GridView.count(
-                  crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                  crossAxisCount: MediaQuery.of(context).size.width > 600
+                      ? 3
+                      : 2,
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
                   shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(), // penting!
+                  physics: const NeverScrollableScrollPhysics(),
                   children: [
                     MenuCardWidget(
                       icon: Icons.directions_car,
                       label: 'Kendaraanku',
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const MyVehiclesScreen(),
-                          ),
-                        );
+                        Navigator.pushNamed(context, '/vehicle');
                       },
                     ),
                     MenuCardWidget(
                       icon: Icons.history,
                       label: 'Riwayat Servis',
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const ServiceHistoryScreen(),
-                          ),
-                        );
+                        Navigator.pushNamed(context, '/service');
                       },
                     ),
                     MenuCardWidget(
                       icon: Icons.notifications_active,
                       label: 'Pengingat Servis',
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const ServiceReminderScreen(),
-                          ),
-                        );
+                        Navigator.pushNamed(context, '/reminder');
                       },
                     ),
                   ],

@@ -27,37 +27,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
         "email": emailController.text,
         "password": passwordController.text,
       });
+      final resData = jsonDecode(response.body);
 
       if (!mounted) return;
 
-      if (response.statusCode == 201) {
+      if (resData['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Registrasi berhasil. Silakan login.'),
+          SnackBar(
+            content: Text(resData['message'] ?? 'Registrasi berhasil.'),
             backgroundColor: Colors.green,
           ),
         );
         Navigator.pushReplacementNamed(context, '/login');
       } else {
-        final error = jsonDecode(response.body);
-        _showError(error['message'] ?? 'Registrasi gagal.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(resData['message'] ?? 'Registrasi gagal.')),
+        );
       }
     } catch (e) {
-      _showError('Terjadi kesalahan: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Terjadi kesalahan. Silakan coba lagi nanti.'),
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() => isLoading = false);
       }
     }
-  }
-
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Theme.of(context).colorScheme.error,
-      ),
-    );
   }
 
   @override

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vehicle_service_book_app/ui/widgets/profile_avatar_widget.dart';
-import 'package:vehicle_service_book_app/ui/screens/profile_screen.dart';
 
 class UserMenuWidget extends StatelessWidget {
   final bool showProfileOption;
@@ -24,10 +23,7 @@ class UserMenuWidget extends StatelessWidget {
       onSelected: (value) {
         switch (value) {
           case 'profile':
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ProfileScreen()),
-            );
+            Navigator.pushNamed(context, '/profile');
             break;
           case 'logout':
             _handleLogout(context);

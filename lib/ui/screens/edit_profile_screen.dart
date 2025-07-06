@@ -58,12 +58,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final response = await ApiService.patch('/user/$userId', body: body);
       final data = jsonDecode(response.body);
 
-      if (response.statusCode == 200 && data['success'] == true) {
+      if (data['success'] == true) {
         userProvider.updateProfile(name: body['name'], email: body['email']);
 
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profil berhasil diperbarui')),
+          const SnackBar(
+            content: Text('Profil berhasil diperbarui'),
+            backgroundColor: Colors.green,
+          ),
         );
         Navigator.pop(context, true);
       } else {

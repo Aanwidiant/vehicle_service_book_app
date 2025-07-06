@@ -41,7 +41,12 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
         );
       }
     } catch (e) {
-      debugPrint('Error fetching vehicles: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Terjadi kesalahan. Silakan coba lagi nanti.'),
+        ),
+      );
     } finally {
       setState(() => isLoading = false);
     }
@@ -78,19 +83,28 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
         final response = await ApiService.delete('/vehicle/$vehicleId');
         final data = jsonDecode(response.body);
 
-        if (response.statusCode == 200 && data['success'] == true) {
+        if (data['success'] == true) {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Kendaraan berhasil dihapus')),
+            const SnackBar(
+              content: Text('Kendaraan berhasil dihapus'),
+              backgroundColor: Colors.green,
+            ),
           );
           fetchVehicles();
         } else {
-          throw Exception(data['message'] ?? 'Gagal menghapus kendaraan');
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text(data['message'] ?? 'Gagal menghapus kendaraan.')),
+          );
         }
       } catch (e) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Terjadi kesalahan saat menghapus kendaraan')),
+          const SnackBar(
+            content: Text('Terjadi kesalahan. Silakan coba lagi nanti.'),
+          ),
         );
       }
     }
@@ -131,105 +145,96 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                   final plate = v.plateNumber;
 
                   return Card(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: imageUrl != null
-                                ? Image.network(
-                                    imageUrl,
-                                    width: 70,
-                                    height: 70,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, _) =>
-                                        const Icon(
-                                          Icons.directions_car,
-                                          size: 70,
-                                        ),
-                                  )
-                                : const Icon(Icons.directions_car, size: 70),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/vehicle/detail',
+                          arguments: v,
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: imageUrl != null
+                                  ? Image.network(
+                                      imageUrl,
+                                      width: 70,
+                                      height: 70,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, _) =>
+                                          const Icon(
+                                            Icons.directions_car,
+                                            size: 70,
+                                          ),
+                                    )
+                                  : const Icon(Icons.directions_car, size: 70),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    title,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodyLarge,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    plate,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
-                                  title,
-                                  style: Theme.of(context).textTheme.bodyLarge,
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    minimumSize: const Size(40, 40),
+                                    padding: const EdgeInsets.all(8),
+                                  ),
+                                  onPressed: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      '/vehicle/edit',
+                                      arguments: v,
+                                    ).then((result) {
+                                      if (result == true) fetchVehicles();
+                                    });
+                                  },
+                                  child: const Icon(
+                                    Icons.edit,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  plate,
-                                  style: Theme.of(context).textTheme.bodySmall,
+                                const SizedBox(width: 2),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    minimumSize: const Size(40, 40),
+                                    padding: const EdgeInsets.all(8),
+                                  ),
+                                  onPressed: () => confirmDelete(v.id),
+                                  child: const Icon(
+                                    Icons.delete,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ],
                             ),
-                          ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  minimumSize: const Size(40, 40),
-                                  padding: const EdgeInsets.all(8),
-                                ),
-                                onPressed: () {
-                                  Navigator.pushNamed(
-                                    context,
-                                    '/vehicle/detail',
-                                    arguments: v,
-                                  );
-                                },
-                                child: const Icon(
-                                  Icons.visibility,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(width: 2),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  minimumSize: const Size(40, 40),
-                                  padding: const EdgeInsets.all(8),
-                                ),
-                                onPressed: () async {
-                                  final result = await Navigator.pushNamed(
-                                    context,
-                                    '/vehicle/edit',
-                                    arguments: v,
-                                  );
-
-                                  if (result == true) {
-                                    fetchVehicles();
-                                  }
-                                },
-                                child: const Icon(
-                                  Icons.edit,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(width: 2),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  minimumSize: const Size(40, 40),
-                                  padding: const EdgeInsets.all(8),
-                                ),
-                                onPressed: () => confirmDelete(v.id),
-                                child: const Icon(
-                                  Icons.delete,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   );

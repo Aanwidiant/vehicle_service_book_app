@@ -10,6 +10,7 @@ class CustomTextfieldWidget extends StatefulWidget {
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
   final bool displayOnly;
+  final bool passwordValidator;
 
   const CustomTextfieldWidget({
     super.key,
@@ -21,6 +22,7 @@ class CustomTextfieldWidget extends StatefulWidget {
     this.keyboardType,
     this.inputFormatters,
     this.displayOnly = false,
+    this.passwordValidator = true,
   });
 
   @override
@@ -155,7 +157,7 @@ class CustomTextfieldWidgetState extends State<CustomTextfieldWidget> {
             return 'Format email tidak valid';
           }
 
-          if (widget.label == 'Password') {
+          if (widget.label == 'Password' && widget.passwordValidator == true) {
             if (value.length < 8) {
               setState(() => _hasError = true);
               return 'Password harus memiliki minimal 8 karakter.';

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vehicle_service_book_app/services/api_service.dart';
@@ -36,19 +38,34 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
 
     try {
       final response = await ApiService.post('/vehicle', data);
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        if (!mounted) return;
+      final resData = jsonDecode(response.body);
+
+      if (!mounted) return;
+
+      if (resData['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              resData['message'] ?? 'Kendaraan berhasil ditambahkan.',
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
         Navigator.pop(context, true);
       } else {
-        if (!mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Gagal menambah kendaraan.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(resData['message'] ?? 'Gagal menambah kendaraan.'),
+          ),
+        );
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Terjadi kesalahan: $e')));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Terjadi kesalahan. Silakan coba lagi nanti.'),
+        ),
+      );
     } finally {
       setState(() => isSubmitting = false);
     }
@@ -84,14 +101,20 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                 controller: _yearController,
                 label: 'Tahun',
                 hintText: 'Contoh: 2020',
-                keyboardType: TextInputType.numberWithOptions(signed: false, decimal: false),
+                keyboardType: TextInputType.numberWithOptions(
+                  signed: false,
+                  decimal: false,
+                ),
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               ),
               CustomTextfieldWidget(
                 controller: _kmController,
                 label: 'Kilometer Sekarang',
                 hintText: 'Contoh: 25000',
-                keyboardType: TextInputType.numberWithOptions(signed: false, decimal: false),
+                keyboardType: TextInputType.numberWithOptions(
+                  signed: false,
+                  decimal: false,
+                ),
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               ),
               const SizedBox(height: 24),

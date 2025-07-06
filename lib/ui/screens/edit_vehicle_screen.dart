@@ -80,11 +80,15 @@ class _EditVehicleScreenState extends State<EditVehicleScreen> {
       );
       final data = jsonDecode(response.body);
 
-      if (response.statusCode == 200 && data['success'] == true) {
+      if (data['success'] == true) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Data Kendaraan berhasil diperbarui')),
+          const SnackBar(
+            content: Text('Data Kendaraan berhasil diperbarui'),
+            backgroundColor: Colors.green,
+          ),
         );
+
         Navigator.pop(context, true);
       } else {
         if (!mounted) return;
@@ -126,7 +130,10 @@ class _EditVehicleScreenState extends State<EditVehicleScreen> {
       if (response.statusCode == 200 && data['success'] == true) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Foto kendaraan berhasil diunggah')),
+          const SnackBar(
+            content: Text('Foto kendaraan berhasil diunggah'),
+            backgroundColor: Colors.green,
+          ),
         );
         Navigator.pop(context, true);
       } else {

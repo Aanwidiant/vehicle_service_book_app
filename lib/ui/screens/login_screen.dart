@@ -29,10 +29,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final response = await ApiService.postNoAuth('/user/login', data);
+      final resData = jsonDecode(response.body);
 
       if (!mounted) return;
 
-      if (response.statusCode == 200) {
+      if (resData['success'] == true) {
         final result = jsonDecode(response.body);
         final token = result['data']['token'];
         final user = result['data']['user'];
@@ -48,25 +49,30 @@ class _LoginScreenState extends State<LoginScreen> {
           photo: user['photo'] ?? '',
         );
 
-        _showSnackbar('Login berhasil.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(resData['message'] ?? 'Login berhasil.'),
+            backgroundColor: Colors.green,
+          ),
+        );
         Navigator.pushReplacementNamed(context, '/dashboard');
       } else {
-        final error = jsonDecode(response.body);
-        _showSnackbar(error['message'] ?? 'Login gagal.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(resData['message'] ?? 'Login gagal.')),
+        );
       }
     } catch (e) {
-      _showSnackbar('Terjadi kesalahan: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Terjadi kesalahan. Silakan coba lagi nanti.'),
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() => isLoading = false);
       }
     }
-  }
-
-  void _showSnackbar(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -119,6 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           hintText: 'Masukkan password',
                           obscureText: true,
                           isOptional: true,
+                          passwordValidator: false,
                         ),
                         const SizedBox(height: 24),
                         ElevatedButton(

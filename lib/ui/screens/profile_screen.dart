@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:vehicle_service_book_app/providers/user_provider.dart';
 import 'package:vehicle_service_book_app/services/api_service.dart';
-import 'package:vehicle_service_book_app/ui/screens/edit_profile_screen.dart';
 import 'package:vehicle_service_book_app/ui/widgets/main_scaffold_widget.dart';
 import 'package:vehicle_service_book_app/ui/widgets/profile_avatar_widget.dart';
 
@@ -31,33 +30,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> fetchUserData() async {
     try {
       final response = await ApiService.get('/user');
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success'] == true) {
-          setState(() {
-            userData = data['data'];
-            isLoading = false;
-          });
-          if (!mounted) return;
-          final userProvider = Provider.of<UserProvider>(
-            context,
-            listen: false,
-          );
-          userProvider.setUser(
-            id: data['data']['id'],
-            name: data['data']['name'],
-            email: data['data']['email'],
-            photo: data['data']['photo'],
-          );
-        } else {
-          setState(() {
-            errorMessage = 'Gagal memuat data.';
-            isLoading = false;
-          });
-        }
+      final data = jsonDecode(response.body);
+
+      if (data['success'] == true) {
+        setState(() {
+          userData = data['data'];
+          isLoading = false;
+        });
+        if (!mounted) return;
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        userProvider.setUser(
+          id: data['data']['id'],
+          name: data['data']['name'],
+          email: data['data']['email'],
+          photo: data['data']['photo'],
+        );
       } else {
         setState(() {
-          errorMessage = 'Terjadi kesalahan. (${response.statusCode})';
+          errorMessage = 'Gagal memuat data.';
           isLoading = false;
         });
       }
@@ -84,7 +74,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
 
       final data = jsonDecode(response.body);
-      if (response.statusCode == 200 && data['success'] == true) {
+      if (data['success'] == true) {
         final photoUrl = data['data']?['photo'] ?? '';
 
         if (!mounted) return;
@@ -92,18 +82,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
         userProvider.updatePhoto(photoUrl);
 
         if (!mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Foto berhasil diunggah')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Foto berhasil diunggah'),
+            backgroundColor: Colors.green,
+          ),
+        );
         fetchUserData();
       } else {
         throw Exception(data['message'] ?? 'Upload gagal');
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Gagal upload foto: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Terjadi kesalahan. Silakan coba lagi nanti.'),
+        ),
+      );
     } finally {
       if (mounted) setState(() => isUploading = false);
     }
@@ -143,20 +138,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final response = await ApiService.delete('/user/$userId');
       final data = jsonDecode(response.body);
 
-      if (response.statusCode == 200 && data['success'] == true) {
+      if (data['success'] == true) {
         if (!mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Akun berhasil dihapus')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Akun berhasil dihapus'),
+            backgroundColor: Colors.green,
+          ),
+        );
         Navigator.of(
           context,
         ).pushNamedAndRemoveUntil('/welcome', (route) => false);
       } else {
-        throw Exception(data['message'] ?? 'Gagal menghapus akun');
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['message'] ?? 'Gagal menghapus akun.')),
+        );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Terjadi kesalahan saat menghapus akun')),
+        const SnackBar(
+          content: Text('Terjadi kesalahan. Silakan coba lagi nanti.'),
+        ),
       );
     }
   }
@@ -248,9 +251,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             ElevatedButton.icon(
               onPressed: () async {
-                final result = await Navigator.push(
+                final result = await Navigator.pushNamed(
                   context,
-                  MaterialPageRoute(builder: (context) => EditProfileScreen()),
+                  '/profile/edit',
                 );
                 if (result == true) fetchUserData();
               },
